@@ -1,0 +1,5 @@
+/venv
+debug.log
+/__pycache__
+env.ps1
+configs.py
