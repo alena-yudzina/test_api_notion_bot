@@ -1,7 +1,7 @@
 import json
 import os
 
-from api_functions import readDatabase, updatePage, createPage
+from api_functions import readDatabase, createPage
 from telegram.ext import CommandHandler
 from telegram.ext import Updater
 from telegram.ext import MessageHandler, Filters
@@ -21,7 +21,8 @@ headers = {
     "Notion-Version": "2021-05-13"
 }
 
-logger.add('debug.log', encoding="utf8", format='TIME: {time} LEVEL: {level} MESSAGE: {message}', rotation='10 MB', compression='zip')
+logger.add('debug.log', encoding="utf8",
+           format='TIME: {time} LEVEL: {level} MESSAGE: {message}', rotation='10 MB', compression='zip')
 
 
 def test():
@@ -39,15 +40,26 @@ def test():
 
 
 def start(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Отправляйте любые проблемы, а сенсей на ближайшем созвоне поможет вам решить их!")
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text="Отправляйте любые проблемы, а сенсей на ближайшем созвоне поможет вам решить их!")
 
 
 def echo(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text='Проблема отправляется. Это займёт некоторе время, но уже можно отправлять ещё')
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text='Проблема отправляется. Это займёт некоторе время, но уже можно отправлять ещё')
     username = update.message.from_user.username
-    text = update.message.text
-    logger.info(f'padavan @{username} sent problem: {text}')
-    print(createPage(problemsDatabaseId, headers, username, text))
+    message = update.message.text
+    logger.info(f'padavan @{username} sent problem: {message}')
+    try:
+        createPage(problemsDatabaseId, headers, username, message)
+        logger.info(f'problem sent to Notion: {message}')
+        text = f'Проблема "{message[:10]}..." отправлена. Будьте уверены, сенсей вам с ней поможет :)'
+        context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+    except Exception:
+        logger.error(f'У бота что-то поломалось. Отправлял @{username} проблему "{message}"')
+        text = 'Что-то пошло не так. Попробуйте повторить отправку через какое-то время, ' \
+               'а пока сообщите об этом сенсею!'
+        context.bot.send_message(chat_id=update.effective_chat.id, text=text)
 
 
 def initTelegram():
@@ -57,8 +69,8 @@ def initTelegram():
     # стандартные обработчики бота
     start_handler = CommandHandler('start', start)
     dispatcher.add_handler(start_handler)
-    # echo_handler = MessageHandler(Filters.text, echo)
-    # dispatcher.add_handler(echo_handler)
+    echo_handler = MessageHandler(Filters.text, echo)
+    dispatcher.add_handler(echo_handler)
     logger.info('Bot Polling Started')
     updater.start_polling()
 
