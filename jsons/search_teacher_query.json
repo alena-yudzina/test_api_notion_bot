@@ -1,0 +1,8 @@
+{
+    "filter": {
+        "property": "Telegram",
+        "rich_text":{
+                "contains": "will_be_replaced"
+        }
+    }
+}

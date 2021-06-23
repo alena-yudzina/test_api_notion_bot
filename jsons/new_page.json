@@ -1,0 +1,34 @@
+{
+	"parent": { "database_id": "" },
+	"properties": {
+        "Done": {
+            "checkbox": false
+        },
+        "Padavan": {
+            "select": {
+                "name": "undefined"
+            }
+        },
+        "Problem": {
+            "rich_text": [
+				{
+					"text": {
+						"content": "undefined"
+					}
+				}
+			]
+        },
+        "Teacher": {
+            "relation": [{}]
+        },
+        "Name": {
+            "title": [
+                {
+					"text": {
+						"content": "undefined"
+					}
+				}
+            ]
+        }
+    }
+}
