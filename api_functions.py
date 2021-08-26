@@ -1,16 +1,18 @@
 import requests
 import json
 import os
+from dotenv import load_dotenv
 
 
 def searchTeacher(username, headers):
+    load_dotenv()
     teachers_db = os.getenv('TEACHERS_DATABASE_ID')
     queryUrl = f"https://api.notion.com/v1/databases/{teachers_db}/query"
 
     with open('./jsons/search_teacher_query.json') as f:
         queryData = json.load(f)
 
-    queryData['filter']['rich_text']['contains'] = username
+    queryData['filter']['rollup']['contains'] = username
     data = json.dumps(queryData)
 
     res = requests.request("POST", queryUrl, headers=headers, data=data)

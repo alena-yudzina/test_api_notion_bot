@@ -1,5 +1,7 @@
 import json
 import os
+import requests
+from dotenv import load_dotenv
 
 from api_functions import readDatabase, createPage
 from telegram.ext import CommandHandler
@@ -8,6 +10,8 @@ from telegram.ext import MessageHandler, Filters
 from loguru import logger
 
 
+load_dotenv()
+
 api_token = os.getenv('SECRET_NOTION_TOKEN')
 bot_token = os.getenv('BOT_TOKEN_TEST')
 
@@ -15,28 +19,16 @@ problemsDatabaseId = os.getenv('PROBLEMS_DATABASE_ID')
 
 pageId = ('PAGE_ID')
 
+teachers_db = os.getenv('TEACHERS_DATABASE_ID')
+
 headers = {
     "Authorization": "Bearer " + api_token,
     "Content-Type": "application/json",
-    "Notion-Version": "2021-05-13"
+    "Notion-Version": "2021-08-16"
 }
 
 logger.add('debug.log', encoding="utf8",
            format='TIME: {time} LEVEL: {level} MESSAGE: {message}', rotation='10 MB', compression='zip')
-
-
-def test():
-    '''with open('./jsons/update.json') as f:
-        updateData = json.load(f)
-
-    print(updatePage(pageId, headers, updateData))'''
-
-    print(createPage(problemsDatabaseId, headers))
-
-    data = readDatabase(problemsDatabaseId, headers)
-
-    with open('./jsons/db.json', 'w', encoding='utf8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
 
 
 def start(update, context):
@@ -55,7 +47,8 @@ def echo(update, context):
         logger.info(f'problem sent to Notion: {message}')
         text = f'Проблема "{message[:10]}..." отправлена. Будьте уверены, сенсей вам с ней поможет :)'
         context.bot.send_message(chat_id=update.effective_chat.id, text=text)
-    except Exception:
+    except Exception as e:
+        logger.exception(e)
         logger.error(f'У бота что-то поломалось. Отправлял @{username} проблему "{message}"')
         text = 'Что-то пошло не так. Попробуйте повторить отправку через какое-то время, ' \
                'а пока сообщите об этом сенсею!'
@@ -76,5 +69,10 @@ def initTelegram():
 
 
 if __name__ == "__main__":
-    # initTelegram()
-    test()
+    initTelegram()
+    readUrl = f"https://api.notion.com/v1/databases/{teachers_db}/query"
+
+    res = requests.request("POST", readUrl, headers=headers)
+
+    with open('teacher.json', 'w') as f:
+        json.dump(res.json(), f, ensure_ascii=False, indent=2)
